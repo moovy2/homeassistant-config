@@ -22,25 +22,28 @@
   mode: single
 - id: close_garage_door_notification
   alias: Garage door open when alarm arms — notify
+  description: Notifies when garage door open and alarm arms, prompts to close
   triggers:
-  - entity_id: alarm_control_panel.simplisafe_2
+  - trigger: state
+    entity_id: alarm_control_panel.simplisafe_2
     to: armed_home
-    trigger: state
-  - entity_id: alarm_control_panel.simplisafe_2
+    note: Fires when alarm arms to home/away and garage is open
+  - trigger: state
+    entity_id: alarm_control_panel.simplisafe_2
     to: armed_away
-    trigger: state
   conditions:
-    condition: state
+  - condition: state
     entity_id: cover.garagedoor
     state: open
   actions:
-  - data:
+  - action: notify.mobile_app_alokphone2
+    data:
       message: Garage Door Open
       title: Garage Door Open
-    action: notify.mobile_app_alokphone2
-  - target:
+    note: Sends mobile notification and triggers script.notificationgaragedoor
+  - action: homeassistant.turn_on
+    target:
       entity_id: script.notificationgaragedoor
-    action: homeassistant.turn_on
 - id: alarm_arm_away_on_departure
   alias: Arm alarm when everyone leaves
   description: Arms SimpliSafe to away 10 min after last household member leaves,
@@ -397,18 +400,23 @@
     action: switch.turn_off
 - id: hvac_set_prev_efficiency
   alias: HVAC set previous efficiency
+  description: Saves previous HVAC efficiency value before temperature change for
+    efficiency tracking
   triggers:
-  - entity_id:
+  - trigger: state
+    entity_id:
     - sensor.master_temp_change
     - sensor.upstairs_temp_change
     - sensor.downstairs_temp_change
     to: '-999'
-    trigger: state
+    note: Fires when HVAC temp-change sensor resets, capturing previous efficiency
+  conditions: []
   actions:
   - condition: template
     value_template: '{{ trigger.from_state is not none and trigger.from_state.state
       not in [''unknown'', ''unavailable''] }}'
-  - target:
+  - action: input_number.set_value
+    target:
       entity_id: "{%- if trigger.entity_id == 'sensor.master_temp_change' -%}\n  input_number.master_prev_eff\n{%-
         elif trigger.entity_id == 'sensor.upstairs_temp_change' -%}\n  input_number.upstairs_prev_eff\n{%-
         elif trigger.entity_id == 'sensor.downstairs_temp_change' -%}\n  input_number.downstairs_prev_eff\n{%-
@@ -417,32 +425,37 @@
       value: '{{ trigger.from_state.state|float(0) }}
 
         '
-    action: input_number.set_value
+    note: Saves previous temp-change value to corresponding input_number for history
 - id: hvac_set_prev_temp
   alias: HVAC set previous temperature
+  description: Records timestamp and previous temperature when HVAC starts heating
+    or cooling for cycle tracking
   triggers:
-  - entity_id:
+  - trigger: state
+    entity_id:
     - sensor.master_thermostat
     - sensor.upstairs_thermostat
     - sensor.downstairs_thermostat
     to: cooling
-    trigger: state
-  - entity_id:
+    note: Fires when HVAC switches to cooling or heating to capture cycle start
+  - trigger: state
+    entity_id:
     - sensor.master_thermostat
     - sensor.upstairs_thermostat
     - sensor.downstairs_thermostat
     to: heating
-    trigger: state
+  conditions: []
   actions:
-  - target:
+  - action: input_datetime.set_datetime
+    target:
       entity_id: "{%- if trigger.entity_id == 'sensor.master_thermostat' -%}\n  input_datetime.master_time\n{%-
         elif trigger.entity_id == 'sensor.upstairs_thermostat' -%}\n  input_datetime.upstairs_time\n{%-
         elif trigger.entity_id == 'sensor.downstairs_thermostat' -%}\n  input_datetime.downstairs_time\n{%-
         endif -%}\n"
     data:
       datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
-    action: input_datetime.set_datetime
-  - target:
+  - action: input_number.set_value
+    target:
       entity_id: "{%- if trigger.entity_id == 'sensor.master_thermostat' -%}\n  input_number.master_prev_temp\n{%-
         elif trigger.entity_id == 'sensor.upstairs_thermostat' -%}\n  input_number.upstairs_prev_temp\n{%-
         elif trigger.entity_id == 'sensor.downstairs_thermostat' -%}\n  input_number.downstairs_prev_temp\n{%-
@@ -452,7 +465,7 @@
         elif trigger.entity_id == 'sensor.upstairs_thermostat' -%}\n  {{state_attr(\"climate.upstairs_homekit\",\"current_temperature\")|float}}\n{%-
         elif trigger.entity_id == 'sensor.downstairs_thermostat' -%}\n  {{state_attr(\"climate.downstairs\",\"current_temperature\")|float}}\n{%-
         endif -%}\n"
-    action: input_number.set_value
+    note: Saves cycle start time and previous temperature to input helpers
 - id: prevent_master_hvac_failure
   alias: Prevent master hvac failure
   triggers:
@@ -527,11 +540,14 @@
     action: notify.mobile_app_alokphone2
 - id: master_lights_on
   alias: Turn on Master lights on motion
+  description: Turns on master bedroom lights when motion detected in evening/night
+    when lights are off and house is occupied
   triggers:
-  - entity_id: binary_sensor.master_motion_occupancy
+  - trigger: state
+    entity_id: binary_sensor.master_motion_occupancy
     from: 'off'
     to: 'on'
-    trigger: state
+    note: Fires when master motion occupancy becomes active
   conditions:
   - condition: template
     value_template: '{% set h = now().hour %} {% set sun_setting = as_timestamp(state_attr(''sun.sun'',
@@ -555,16 +571,17 @@
     entity_id: input_boolean.master_occupied
     state: 'off'
   actions:
-  - target:
+  - action: light.turn_on
+    target:
       entity_id: light.master_lights
     data:
       brightness: 255
-    action: light.turn_on
+    note: Turns on master lights at full brightness then applies default Hue scene
   - delay: 00:00:05
-  - data:
+  - action: script.set_hue_scene
+    data:
       group: Master
       scene: Default
-    action: script.set_hue_scene
 - id: master_lights_off
   alias: Turn off Master lights
   triggers:
@@ -588,14 +605,17 @@
     action: light.turn_off
 - id: garage_lights_on
   alias: Garage lights on when door opens
+  description: Turns on garage lights when mud room door or garage door opens at night
+    or when garage is closed
   triggers:
-  - entity_id: binary_sensor.mud_room_door_4
+  - trigger: state
+    entity_id: binary_sensor.mud_room_door_4
     from: 'off'
     to: 'on'
-    trigger: state
-  - entity_id: cover.garagedoor
+    note: Fires when mud room door opens or garage door opens
+  - trigger: state
+    entity_id: cover.garagedoor
     to: open
-    trigger: state
   conditions:
   - condition: or
     conditions:
@@ -606,11 +626,12 @@
       entity_id: sun.sun
       state: below_horizon
   actions:
-  - target:
+  - action: light.turn_on
+    target:
       entity_id: light.lifx5
     data:
       brightness: 255
-    action: light.turn_on
+    note: Turns on garage LIFX light at full brightness
 - id: garage_lights_off
   alias: Garage lights off when mudroom door closes
   triggers:
@@ -846,8 +867,11 @@
     action: switch.turn_on
 - id: sensors_changed_when_nobody_home
   alias: Sensors changed when nobody is home
+  description: 'Intrusion alert: turns on all lights and notifies when doors or motion
+    sensors trigger while household is away for 10 minutes'
   triggers:
-  - entity_id:
+  - trigger: state
+    entity_id:
     - binary_sensor.garage_door
     - binary_sensor.back_door
     - binary_sensor.garage_entry_door
@@ -857,7 +881,7 @@
     - binary_sensor.motion_sensor_158d0001a1f2ab
     from: 'off'
     to: 'on'
-    trigger: state
+    note: Fires when any door or motion sensor activates while away
   conditions:
   - condition: state
     entity_id: group.household
@@ -865,18 +889,20 @@
     for:
       minutes: 10
   actions:
-  - target:
+  - action: light.turn_on
+    target:
       entity_id: group.all_lights
-    action: light.turn_on
-  - data:
+    note: Turns on all lights and sends alarm notification with triggering sensor
+      details
+  - action: notify.mobile_app_alokphone2
+    data:
       title: Alarm!
       message: The {{ trigger.to_state.name }} was changed to {{ trigger.to_state.state
         }} while no one is home - {{ as_timestamp(now()) | timestamp_custom('%I:%M:%S
         %p %d-%b-%Y', true) }}
-    action: notify.mobile_app_alokphone2
-  - target:
+  - action: homeassistant.turn_on
+    target:
       entity_id: script.notificationalarm
-    action: homeassistant.turn_on
 - id: sound_abode_alarm_notification
   alias: Sound alarm using notifications
   triggers:
@@ -993,14 +1019,19 @@
       - sensor.emulated_hue_names
 - id: set_initial_values_on_harmony_start
   alias: Set initial values on Harmony Start
+  description: Initializes TV state, Harmony activity, volume and HDMI switcher when
+    Harmony remote turns on
   triggers:
   - trigger: state
     entity_id: remote.livingroom
     to: 'on'
+    note: Fires when Harmony remote activates to sync initial states
+  conditions: []
   actions:
   - action: homeassistant.turn_on
     target:
       entity_id: input_boolean.tv
+    note: Syncs TV flag, Harmony activity, volume level and HDMI input for new session
   - action: input_select.select_option
     target:
       entity_id: input_select.livingroomharmony
@@ -1132,19 +1163,28 @@
         \ Shield\n{%- endif -%}\n"
 - id: update_ha_after_startup
   alias: Update HA after startup
+  description: Runs initialization script shortly after Home Assistant starts to restore
+    states
   triggers:
   - trigger: homeassistant
     event: start
+    note: Fires on Home Assistant startup to re-initialize states
+  conditions: []
   actions:
   - delay: 00:00:01
   - action: homeassistant.turn_on
     target:
       entity_id: script.initialize_hass
+    note: Triggers initialization script after brief delay to ensure HA is ready
 - id: change_hdmi_switcher
   alias: Change HDMI Switcher
+  description: Routes HDMI switcher input via Harmony remote when input selector changes
+    between AppleTV, FireTV and Shield
   triggers:
   - trigger: state
     entity_id: input_select.hdmiswitcher
+    note: Fires when HDMI input selector changes to route correct port
+  conditions: []
   actions:
   - action: remote.send_command
     target:
@@ -1154,6 +1194,7 @@
         trigger.to_state.state == \"FireTV\" -%}\n  Input2\n{%- elif trigger.to_state.state
         == \"Shield\" -%}\n  Input3\n{%- endif -%}"
       device: 31766668
+    note: Sends IR command to HDMI switcher for selected input
 - id: change_hdmi_input
   alias: Change HDMI Input
   triggers:
@@ -1446,18 +1487,17 @@
   mode: queued
 - id: thermostat_proximity_approaching
   alias: Thermostat - Pre-condition when approaching
-  description: 'Turn off away mode when the nearest person is heading towards home
-    and within 5 miles. Fires on direction change to ''towards'' or when distance
-    drops below threshold while already heading towards.
-
-    '
+  description: Pre-conditions thermostats to home mode when the nearest person is
+    heading towards home within 5 miles
   triggers:
-  - entity_id: sensor.home_nearest_direction_of_travel
+  - trigger: state
+    entity_id: sensor.home_nearest_direction_of_travel
     to: towards
-    trigger: state
-  - entity_id: sensor.home_nearest_distance
+    note: Fires when travel direction becomes towards home or distance drops below
+      5 miles while heading towards
+  - trigger: numeric_state
+    entity_id: sensor.home_nearest_distance
     below: 5280
-    trigger: numeric_state
   conditions:
   - condition: state
     entity_id: sensor.home_nearest_direction_of_travel
@@ -1477,20 +1517,21 @@
       entity_id: switch.bedroom_away
       state: 'on'
   actions:
-  - target:
+  - action: homeassistant.turn_off
+    target:
       entity_id:
       - switch.downstairs_away
       - switch.upstairs_away
       - switch.bedroom_away
-    action: homeassistant.turn_off
-  - data:
+    note: Disables away mode on all thermostats and notifies user of pre-conditioning
+  - action: notify.mobile_app_alokphone2
+    data:
       title: Home Pre-conditioned
       message: '{{ states(''sensor.home_nearest_device'') }} is heading home (~{{
         (states(''sensor.home_nearest_distance'') | float / 5280) | round(1) }} miles
         away). Thermostats switched to home mode.
 
         '
-    action: notify.mobile_app_alokphone2
   mode: single
 - id: thermostat_proximity_revert
   alias: Thermostat - Revert to away when not coming home

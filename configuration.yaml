@@ -403,6 +403,7 @@ template:
   - sensor:
       - name: Cube Last Action
         unique_id: cube_last_action
+        availability: "{{ has_value(''binary_sensor.cube_158d0001035aa7'') }}"
         state: >
           {% set t = as_timestamp(states.binary_sensor.cube_158d0001035aa7.last_updated, default=0) %}
           {% if t == 0 or as_timestamp(now()) - t > 50 %}
@@ -412,11 +413,13 @@ template:
           {% endif %}
       - name: Living Room Temperature
         unique_id: livingroom_temp_rounded
+        availability: "{{ has_value(''sensor.living_room_temperature'') }}"
         state: >-
           {% set temp = states('sensor.living_room_temperature') %}
           {{ temp | float | round(0) | int if is_number(temp) else 'unavailable' }}
       - name: Study Temperature
         unique_id: study_temp_rounded
+        availability: "{{ has_value(''sensor.study_temperature_2'') or has_value(''sensor.study_temperature'') }}"
         state: >-
           {% set primary = states('sensor.study_temperature_2') %}
           {% set fallback = states('sensor.study_temperature') %}
@@ -429,6 +432,7 @@ template:
           {% endif %}
       - name: Battery Status
         unique_id: battery_status
+        availability: "{{ true }}"
         state: >-
           {%- set threshold = 25 -%}
           {%- set domains = ['light', 'switch', 'sensor', 'zwave', 'binary_sensor', 'camera'] -%}
@@ -439,6 +443,7 @@ template:
           {%- endfor -%}
       - name: Master Temp Change
         unique_id: master_temp_change
+        availability: "{{ has_value(''sensor.master_thermostat'') and has_value(''climate.master_homekit'') }}"
         unit_of_measurement: "min"
         state: >-
           {%- set time_started = state_attr('input_datetime.master_time','timestamp') -%}
@@ -461,6 +466,7 @@ template:
           {%- endif -%}
       - name: Upstairs Temp Change
         unique_id: upstairs_temp_change
+        availability: "{{ has_value(''sensor.upstairs_thermostat'') and has_value(''climate.upstairs_homekit'') }}"
         unit_of_measurement: "min"
         state: >-
           {%- set time_started = state_attr('input_datetime.upstairs_time','timestamp') -%}
@@ -483,6 +489,7 @@ template:
           {%- endif -%}
       - name: Downstairs Temp Change
         unique_id: downstairs_temp_change
+        availability: "{{ has_value(''sensor.downstairs_thermostat'') and has_value(''climate.downstairs'') }}"
         unit_of_measurement: "min"
         state: >-
           {%- set time_started = state_attr('input_datetime.downstairs_time','timestamp') -%}
@@ -505,6 +512,7 @@ template:
           {%- endif -%}
       - name: Wemo Current Power
         unique_id: wemopowerused
+        availability: "{{ has_value(''switch.wemoinsight'') }}"
         unit_of_measurement: "w"
         state: >-
           {%- if state_attr('switch.wemoinsight','current_power_w') -%}
@@ -602,6 +610,7 @@ template:
   - device_tracker:
       - name: Alok Smart
         unique_id: alok_smart_tracker
+        availability: "{{ has_value(''device_tracker.alok'') or has_value(''device_tracker.alokphone2'') }}"
         latitude: >-
           {% set t1 = states.device_tracker.alok.last_updated if states.device_tracker.alok else 0 %}
           {% set t2 = states.device_tracker.alokphone2.last_updated if states.device_tracker.alokphone2 else 0 %}
@@ -619,6 +628,7 @@ template:
           {{ state_attr(winner, 'gps_accuracy') }}
       - name: Rashmi Smart
         unique_id: rashmi_smart_tracker
+        availability: "{{ has_value(''device_tracker.rashmi'') or has_value(''device_tracker.rashmiiphone2'') }}"
         latitude: >-
           {% set t1 = states.device_tracker.rashmi.last_updated if states.device_tracker.rashmi else 0 %}
           {% set t2 = states.device_tracker.rashmiiphone2.last_updated if states.device_tracker.rashmiiphone2 else 0 %}
@@ -636,6 +646,7 @@ template:
           {{ state_attr(winner, 'gps_accuracy') }}
       - name: Arnav Smart
         unique_id: arnav_smart_tracker
+        availability: "{{ has_value(''device_tracker.arnav'') or has_value(''device_tracker.arnavs_iphone_17_pm'') }}"
         latitude: >-
           {% set t1 = states.device_tracker.arnav.last_updated if states.device_tracker.arnav else 0 %}
           {% set t2 = states.device_tracker.arnavs_iphone_17_pm.last_updated if states.device_tracker.arnavs_iphone_17_pm else 0 %}
