@@ -5,7 +5,7 @@
 - id: person_logging
   alias: 'Log person changes'
   trigger:
-    - platform: state
+    - trigger: state
       entity_id:
         - person.alok
         - person.rashmi
@@ -24,7 +24,7 @@
   mode: queued
   trigger:
     # Delayed action for router-based and Owntracks trackers that are not 100% reliable
-    - platform: state
+    - trigger: state
       entity_id:
         - device_tracker.alokiphone
         - device_tracker.rashmiiphone
@@ -32,14 +32,14 @@
         - device_tracker.arnavphone
       to: 'not_home'
       for: '00:07:00'
-    - platform: state
+    - trigger: state
       entity_id:
         - device_tracker.alokphone_alokphone_2
         - device_tracker.rashmiphone_rashmiphone_2
         - device_tracker.arnavphone_arnavphone
       to: 'home'
       for: '00:00:30'
-    - platform: state
+    - trigger: state
       entity_id:
         - device_tracker.alokphone2
         - device_tracker.275f08b3_dd14_459f_81b9_6c5b02c9b54e
@@ -48,7 +48,7 @@
         - device_tracker.arnavs_iphone_17_pm
 #        - device_tracker.7dab02d9_7205_4897_95d8_3d8921ed7ccf
         - device_tracker.bb1c8fd7_590d_4544_a362_07eba9dae90b
-    - platform: state
+    - trigger: state
       entity_id:
         - device_tracker.alokiphone
         - device_tracker.elantrase_2
@@ -69,17 +69,17 @@
   alias: "Update Alok Test Tracker"
   mode: queued
   trigger:
-    - platform: state
+    - trigger: state
       entity_id:
         - device_tracker.alokphone_alokphone_2
       to: 'not_home'
       for: '00:07:00'
-    - platform: state
+    - trigger: state
       entity_id:
         - device_tracker.alokphone_alokphone_2
       to: 'home'
       for: '00:00:30'
-    - platform: state
+    - trigger: state
       entity_id:
         - device_tracker.alokphone2
         - device_tracker.alok_geofency
@@ -119,12 +119,12 @@
   mode: queued
   trigger:
     # Delayed action for router-based and Owntracks trackers that are not 100% reliable
-    - platform: state
+    - trigger: state
       entity_id:
         - device_tracker.alokiphone
       to: 'not_home'
       for: '00:07:00'
-    - platform: state
+    - trigger: state
       entity_id:
         - device_tracker.alokiphone
         - device_tracker.elantrase_2
@@ -143,17 +143,17 @@
   mode: queued
   trigger:
     # Delayed action for router-based and Owntracks trackers that are not 100% reliable
-    - platform: state
+    - trigger: state
       entity_id:
         - device_tracker.rashmiphone_rashmiphone_2
       to: 'not_home'
       for: '00:07:00'
-    - platform: state
+    - trigger: state
       entity_id:
         - device_tracker.rashmiphone_rashmiphone_2
       to: 'home'
       for: '00:00:30'
-    - platform: state
+    - trigger: state
       entity_id:
         - device_tracker.275f08b3_dd14_459f_81b9_6c5b02c9b54e
         - device_tracker.rashmiappiphone_2
@@ -200,12 +200,12 @@
   mode: queued
   trigger:
     # Delayed action for router-based and Owntracks trackers that are not 100% reliable
-    - platform: state
+    - trigger: state
       entity_id:
         - device_tracker.rashmiiphone
       to: 'not_home'
       for: '00:07:00'
-    - platform: state
+    - trigger: state
       entity_id:
         - device_tracker.rashmiiphone
       to: 'home'
@@ -230,7 +230,7 @@
 - id: abode_ios_notifications
   alias: Abode Actionable Notification
   trigger:
-    - platform: event
+    - trigger: event
       event_type: abode_alarm
   action:
     - service: notify.mobile_app_alokphone2
@@ -258,16 +258,16 @@
           true
         {%- endif -%}
   trigger:
-    - platform: state
+    - trigger: state
       entity_id: group.household
       from: 'not_home'
       to: 'home'
-    - platform: event
+    - trigger: event
       event_type: ios.notification_action_fired
       event_data:
         actionName: DISARM_ABODE
   action:
-     service: homeassistant.turn_on
+     action: homeassistant.turn_on
      entity_id: script.abodestandby
 
 - id: disarm_abode_at_night
@@ -280,14 +280,14 @@
       entity_id: input_boolean.abodeupdate
       state: 'on'
   trigger:
-   - platform: state
+   - trigger: state
      entity_id:
        - device_tracker.meta_rashmi
        - device_tracker.meta_alok
      from: 'not_home'
      to: 'home'
   action:
-    service: homeassistant.turn_on
+    action: homeassistant.turn_on
     entity_id: script.abodestandby
 
 - id: abode_home_from_standby
@@ -312,7 +312,7 @@
            true
          {%- endif -%}
   trigger:
-    - platform: time_pattern
+    - trigger: time_pattern
       minutes: '/10'
   action:
     - service: homeassistant.turn_on
@@ -349,7 +349,7 @@
             entity_id: input_select.abodestatus
             state: 'armed_away'
   trigger:
-    - platform: time_pattern
+    - trigger: time_pattern
       minutes: '/10'
   action:
     - service: homeassistant.turn_on
@@ -374,7 +374,7 @@
           entity_id: input_select.abodestatus
           state: 'armed_away'
   trigger:
-    - platform: time
+    - trigger: time
       at: "05:30:00"
   action:
     - service: homeassistant.turn_on
@@ -397,17 +397,17 @@
     - condition: template
       value_template: "{{ states('input_select.abodestatus') != 'armed_away' }}"
   trigger:
-    - platform: state
+    - trigger: state
       entity_id: group.household
       from: 'home'
       to: 'not_home'
-    - platform: state
+    - trigger: state
       entity_id: group.household
       from: 'home'
       to: 'not_home'
       for: '00:10:00'
   action:
-     service: homeassistant.turn_on
+     action: homeassistant.turn_on
      entity_id: script.abodeaway
 
 - id: abode_home_at_night
@@ -422,7 +422,7 @@
        entity_id: group.household
        state: 'home'
   trigger:
-    platform: time
+    trigger: time
     at: '22:00:00'
   action:
     - service: homeassistant.turn_on
@@ -441,7 +441,7 @@
        entity_id: input_boolean.abodeupdate
        state: 'on'
   trigger:
-    - platform: time
+    - trigger: time
       at: '05:20:00'
   action:
     - service: homeassistant.turn_on
@@ -462,7 +462,7 @@
       value_template: >
         {{states('input_select.abodestatus') == 'disarmed' and states('group.thermostats') == 'on'}}
   trigger:
-    - platform: time_pattern
+    - trigger: time_pattern
       minutes: '/5'
   action:
     - service: homeassistant.turn_off
@@ -499,9 +499,9 @@
           value_template: >
             {{states('input_select.abodestatus') == 'armed_away' and states('switch.bedroom_away') == 'off'}}
   trigger:
-    - platform: time_pattern
+    - trigger: time_pattern
       minutes: '/5'
-    - platform: event
+    - trigger: event
       event_type: resume_thermostat_schedule
   action:
     - service: homeassistant.turn_on
@@ -520,7 +520,7 @@
 #   alias: 'OpenCV image processing'
 #   initial_state: 'on'
 #   trigger:
-#     - platform: state
+#     - trigger: state
 #       entity_id:
 #         - image_processing.opencv_porch
 #         - image_processing.opencv_patio
@@ -585,7 +585,7 @@
 #       entity_id: light.master_lights
 #       state: 'on'
 #   trigger:
-#     - platform: event
+#     - trigger: event
 #       event_type: xiaomi_aqara.cube_action
 #       event_data:
 #         entity_id: binary_sensor.cube_158d0001035aa7
@@ -617,7 +617,7 @@
 - id: prevent_overcharging_kasa
   alias: 'Prevent overcharging Kasa'
   trigger:
-    - platform: numeric_state
+    - trigger: numeric_state
       entity_id: sensor.smart_wifi_current_consumption
       below: 2
       for: '00:05:00'
@@ -626,14 +626,14 @@
       entity_id: switch.smart_wifi
       state: 'on'
   action:
-     service: switch.turn_off
+     action: switch.turn_off
      target:
        entity_id: switch.smart_wifi
 
 - id: prevent_overcharging_kasa_3
   alias: 'Prevent overcharging Kasa_3'
   trigger:
-    - platform: numeric_state
+    - trigger: numeric_state
       entity_id: sensor.kasa_plug_3_current_consumption
       below: 1
       for: '00:05:00'
@@ -642,14 +642,14 @@
       entity_id: switch.kasa_plug_3
       state: 'on'
   action:
-     service: switch.turn_off
+     action: switch.turn_off
      target:
        entity_id: switch.kasa_plug_3
 
 - id: prevent_overcharging_wemo
   alias: 'Prevent overcharging wemo'
   trigger:
-    - platform: numeric_state
+    - trigger: numeric_state
       entity_id: sensor.wemoinsight_current_power
       below: 2
       for: '00:05:00'
@@ -658,7 +658,7 @@
       entity_id: switch.wemoinsight
       state: 'on'
   action:
-     service: switch.turn_off
+     action: switch.turn_off
      target:
        entity_id: switch.wemoinsight
 
@@ -666,12 +666,12 @@
 - id: prevent_hvac_failure_2
   alias: 'Prevent HVAC Failure 2'
   trigger:
-    - platform: state
+    - trigger: state
       entity_id:
         - sensor.master_thermostat
       to: 'cooling'
       for: '00:03:00'
-    - platform: state
+    - trigger: state
       entity_id:
         - sensor.master_thermostat
       to: 'heating'
@@ -688,12 +688,12 @@
 - id: notify_if_living_room_hvac_not_working
   alias: 'Notify if living room HVAC not working'
   trigger:
-    - platform: state
+    - trigger: state
       entity_id:
         - sensor.downstairs_thermostat
       to: 'cooling'
       for: '00:05:00'
-    - platform: state
+    - trigger: state
       entity_id:
         - sensor.downstairs_thermostat
       to: 'heating'
@@ -722,12 +722,12 @@
 - id: notify_if_master_room_hvac_not_working
   alias: 'Notify if master room HVAC not working'
   trigger:
-    - platform: state
+    - trigger: state
       entity_id:
         - sensor.master_thermostat
       to: 'cooling'
       for: '00:03:00'
-    - platform: state
+    - trigger: state
       entity_id:
         - sensor.master_thermostat
       to: 'heating'
@@ -756,7 +756,7 @@
 - id: check_ubuntarr_public_ip
   alias: 'Notify on UbuntArr public IP change'
   trigger:
-    - platform: state
+    - trigger: state
       entity_id:
         - sensor.deluge_external_ip
   condition:
@@ -775,7 +775,7 @@
 - id: ensure_room_assistant_nodes_on
   alias: 'Ensure Room Assistant devices are on'
   trigger:
-    - platform: state
+    - trigger: state
       entity_id:
         - sensor.master_cluster_size
         - sensor.study_cluster_size
@@ -793,7 +793,7 @@
 - id: roomassistant_cluster_online
   alias: 'Room Assistant cluster back online'
   trigger:
-    - platform: state
+    - trigger: state
       entity_id:
         - sensor.master_cluster_size
         - sensor.study_cluster_size
@@ -812,7 +812,7 @@
 #   alias: 'Turn on Sunroom lights on motion'
 #   initial_state: 'on'
 #   trigger:
-#     - platform: state
+#     - trigger: state
 #       entity_id: binary_sensor.sunroom_motion_3
 #       from: 'off'
 #       to: 'on'
@@ -835,7 +835,7 @@
 #   alias: 'Turn off Sunroom lights after no motion'
 #   initial_state: 'on'
 #   trigger:
-#     - platform: state
+#     - trigger: state
 #       entity_id: binary_sensor.sunroom_motion_3
 #       from: 'on'
 #       to: 'off'
@@ -853,12 +853,12 @@
 - id: sunroom_lights
   alias: 'Control Sunroom lights based on motion'
   trigger:
-    - platform: state
+    - trigger: state
       entity_id: binary_sensor.sunroom_motion_3
       from: 'off'
       to: 'on'
       id: 'motion_detected'
-    - platform: state
+    - trigger: state
       entity_id: binary_sensor.sunroom_motion_3
       from: 'on'
       to: 'off'
@@ -908,7 +908,7 @@
 - id: set_master_occupancy
   alias: 'Set Master Occupancy'
   trigger:
-    - platform: state
+    - trigger: state
       entity_id:
         - sensor.alok_ble_room
         - sensor.rashmi_ble_room
@@ -921,7 +921,7 @@
 - id: deck_effects
   alias: "Deck Effects"
   trigger:
-    - platform: state
+    - trigger: state
       entity_id: input_boolean.deckeffects
   action:
     - service: homeassistant.turn_on
@@ -937,7 +937,7 @@
 - id: sunroom_effects
   alias: "Sunroom Effects"
   trigger:
-    - platform: state
+    - trigger: state
       entity_id: input_boolean.sunroomeffects
   action:
     - service: homeassistant.turn_on
@@ -972,7 +972,7 @@
          entity_id: input_select.abodestatus
          state: 'armed_away'
   trigger:
-    - platform: time_pattern
+    - trigger: time_pattern
       minutes: '/5'
   action:
     - service: switch.turn_on
@@ -982,7 +982,7 @@
 - id: turn_on_abode_updates
   alias: 'Turn on Abode updates'
   trigger:
-    - platform: event
+    - trigger: event
       event_type: ios.notification_action_fired
       event_data:
         actionName: ENABLE_ABODE_UPDATES
@@ -994,7 +994,7 @@
 - id: update_ubuntarr_ip
   alias: Ubuntarr IP
   trigger:
-    - platform: webhook
+    - trigger: webhook
       webhook_id: "ubuntarr_public_ip"
       # local_only: true
   action:
@@ -1011,7 +1011,7 @@
 - id: ifttt_test
   alias: IFTTT Test
   trigger:
-    platform: event
+    trigger: event
     event_type: ifttt_webhook_received
   action:
     - service: logbook.log
@@ -1022,7 +1022,7 @@
 
 - alias: 'Arlo snapshot'
   trigger:
-    platform: event
+    trigger: event
     event_type: xiaomi_aqara.movement
     event_data:
       entity_id: binary_sensor.vibration_158d0002a51fc2
@@ -1038,27 +1038,27 @@
 - alias: "iOS: Double Tap"
   mode: queued
   trigger:
-    platform: event
+    trigger: event
     event_type: ios.action_fired
     event_data:
       actionName: "Double Tap"
   action:
-    service: media_player.media_next_track
+    action: media_player.media_next_track
     entity_id: media_player.family_room_2
 - alias: "Apple Watch: Skip Track"
   mode: queued
   trigger:
-    platform: event
+    trigger: event
     event_type: ios.action_fired
     event_data:
       actionName: Skip Track
   action:
-    service: media_player.media_next_track
+    action: media_player.media_next_track
     entity_id: media_player.family_room_2
 - alias: "Apple Watch: temperature report"
   mode: parallel
   trigger:
-    platform: event
+    trigger: event
     event_type: ios.action_fired
     event_data:
       actionName: Temperature report
@@ -1078,7 +1078,7 @@
 # - alias: "Apple Watch: set lights"
 #   mode: parallel
 #   trigger:
-#     platform: event
+#     trigger: event
 #     event_type: ios.action_fired
 #     event_data:
 #       actionName: Set lights
@@ -1093,7 +1093,7 @@
 #           push:
 #             category: set_lights
 #     - wait_for_trigger:
-#         platform: event
+#         trigger: event
 #         event_type: ios.notification_action_fired
 #         event_data:
 #           categoryName: set_lights
@@ -1113,7 +1113,7 @@
 #           push:
 #             category: light_options
 #     - wait_for_trigger:
-#         platform: event
+#         trigger: event
 #         event_type: ios.notification_action_fired
 #         event_data:
 #           categoryName: light_options
@@ -1140,7 +1140,7 @@
 - alias: "Apple Watch: set lights"
   mode: parallel
   trigger:
-    platform: event
+    trigger: event
     event_type: ios.action_fired
     event_data:
       actionName: "Set lights"
@@ -1165,15 +1165,15 @@
             - action: "{{ action_kitchen }}"
               title: "Kitchen"
     - wait_for_trigger:
-        - platform: event
+        - trigger: event
           event_type: mobile_app_notification_action
           event_data:
             action: "{{ action_master }}"
-        - platform: event
+        - trigger: event
           event_type: mobile_app_notification_action
           event_data:
             action: "{{ action_living_room }}"
-        - platform: event
+        - trigger: event
           event_type: mobile_app_notification_action
           event_data:
             action: "{{ action_kitchen }}"
@@ -1193,11 +1193,11 @@
                     - action: "{{ action_off }}"
                       title: "Turn Off"
             - wait_for_trigger:
-                - platform: event
+                - trigger: event
                   event_type: mobile_app_notification_action
                   event_data:
                     action: "{{ action_on }}"
-                - platform: event
+                - trigger: event
                   event_type: mobile_app_notification_action
                   event_data:
                     action: "{{ action_off }}"
@@ -1228,11 +1228,11 @@
                     - action: "{{ action_off }}"
                       title: "Turn Off"
             - wait_for_trigger:
-                - platform: event
+                - trigger: event
                   event_type: mobile_app_notification_action
                   event_data:
                     action: "{{ action_on }}"
-                - platform: event
+                - trigger: event
                   event_type: mobile_app_notification_action
                   event_data:
                     action: "{{ action_off }}"
@@ -1262,11 +1262,11 @@
                     - action: "{{ action_off }}"
                       title: "Turn Off"
             - wait_for_trigger:
-                - platform: event
+                - trigger: event
                   event_type: mobile_app_notification_action
                   event_data:
                     action: "{{ action_on }}"
-                - platform: event
+                - trigger: event
                   event_type: mobile_app_notification_action
                   event_data:
                     action: "{{ action_off }}"
@@ -1290,7 +1290,7 @@
 - alias: "Apple Watch: set network"
   mode: parallel
   trigger:
-    platform: event
+    trigger: event
     event_type: ios.action_fired
     event_data:
       actionName: Set network
@@ -1305,7 +1305,7 @@
           push:
             category: set_network
     - wait_for_trigger:
-        platform: event
+        trigger: event
         event_type: ios.notification_action_fired
         event_data:
           categoryName: set_network
@@ -1327,7 +1327,7 @@
           push:
             category: device_options
     - wait_for_trigger:
-        platform: event
+        trigger: event
         event_type: ios.notification_action_fired
         event_data:
           categoryName: device_options
@@ -1338,12 +1338,12 @@
     - choose:
         - conditions: "{{ option == 'OFF' }}"
           sequence:
-            service: switch.turn_off
+            action: switch.turn_off
             target:
               entity_id: "{{ device }}"
         - conditions: "{{ option == 'ON' }}"
           sequence:
-            service: switch.turn_on
+            action: switch.turn_on
             target:
               entity_id: "{{ device }}"
 
