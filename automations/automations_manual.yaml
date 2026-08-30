@@ -84,7 +84,7 @@
         - device_tracker.alokphone2
         - device_tracker.alok_geofency
   action:
-    - service: device_tracker.see
+    - service: logbook.log # MIGRATED
       data:
         dev_id: test_alok
         location_name: '{{trigger.to_state.state|lower }}'
@@ -130,7 +130,7 @@
         - device_tracker.elantrase_2
       to: 'home'
   action:
-    - service: device_tracker.see
+    - service: logbook.log # MIGRATED
       data:
         dev_id: test_alok
         location_name: '{{trigger.to_state.state|lower }}'
@@ -158,7 +158,7 @@
         - device_tracker.275f08b3_dd14_459f_81b9_6c5b02c9b54e
         - device_tracker.rashmiappiphone_2
   action:
-    - service: device_tracker.see
+    - service: logbook.log # MIGRATED
       data:
         dev_id: test_rashmi
         location_name: '{{trigger.to_state.state|lower }}'
@@ -210,7 +210,7 @@
         - device_tracker.rashmiiphone
       to: 'home'
   action:
-    - service: device_tracker.see
+    - service: logbook.log # MIGRATED
       data:
         dev_id: test_rashmi
         location_name: '{{trigger.to_state.state|lower }}'

@@ -83,7 +83,7 @@ alexa:
         - light.living_room_lights
         - light.master_lights
         - light.gateway_light_34ce00813670
-        - light.kitchen_lights
+        - light.kitchen
         - light.lifx5
         - switch.driveway
         - switch.wemoporch
@@ -116,7 +116,7 @@ google_assistant:
       expose: true
       name: Porch Lights
       room: porch
-    light.kitchen_lights:
+    light.kitchen:
       expose: true
       room: kitchen
     light.kids_room_lights:
@@ -152,7 +152,7 @@ homekit:
       - light.living_room_lights
       - light.kids_room_lights
       - light.lifx5
-      - light.kitchen_lights
+      - light.kitchen
       - light.master_lights
       - switch.driveway
       - binary_sensor.water_leak_sensor_158d0001d77800
@@ -160,16 +160,16 @@ homekit:
       - binary_sensor.water_leak_sensor_158d0001bb788c
       - camera.garage
 
-http:
-  ip_ban_enabled: true
-  login_attempts_threshold: 1
-  use_x_forwarded_for: true
-  trusted_proxies:
-    - 172.17.0.0/24
-    - 192.168.2.0/24
-    - 127.0.0.1
-    - ::1
-    - 172.17.0.3
+# http:
+#   ip_ban_enabled: true
+#   login_attempts_threshold: 1
+#   use_x_forwarded_for: true
+#   trusted_proxies:
+#     - 172.17.0.0/24
+#     - 192.168.2.0/24
+#     - 127.0.0.1
+#     - ::1
+#     - 172.17.0.3
 
 ffmpeg:
 
@@ -545,13 +545,16 @@ template:
           {%- endif -%}
       - name: Living Room
         unique_id: living_room
-        state: "{{ state_attr('remote.livingroom', 'current_activity') }}"
+        state: "{{ state_attr('remote.livingroom', 'current_activity') | default('unknown', true) }}"
+        availability: "{{ state_attr('remote.livingroom','current_activity') is not none }}"
       - name: Sonos Volume
         unique_id: sonos_volume
-        state: "{{ (state_attr('media_player.family_room_2', 'volume_level')|default(0) * 100) | int }}"
+        availability: "{{ has_value('media_player.family_room_2') and state_attr('media_player.family_room_2','volume_level') is not none }}"
+        state: "{{ (state_attr('media_player.family_room_2', 'volume_level') | float(0) * 100) | int }}"
       - name: Master Volume
         unique_id: master_sonos_volume
-        state: "{{ (state_attr('media_player.master', 'volume_level')|default(0) * 100) | int }}"
+        availability: "{{ has_value('media_player.master') and state_attr('media_player.master','volume_level') is not none }}"
+        state: "{{ (state_attr('media_player.master', 'volume_level') | float(0) * 100) | int }}"
       - name: Emulated Hue Names
         unique_id: emulated_hue_names
         state: >-
@@ -595,6 +598,59 @@ template:
           {%- else -%}
             mdi:fan
           {%- endif -%}
+
+  - device_tracker:
+      - name: Alok Smart
+        unique_id: alok_smart_tracker
+        latitude: >-
+          {% set t1 = states.device_tracker.alok.last_updated if states.device_tracker.alok else 0 %}
+          {% set t2 = states.device_tracker.alokphone2.last_updated if states.device_tracker.alokphone2 else 0 %}
+          {% set winner = 'device_tracker.alok' if t1 > t2 else 'device_tracker.alokphone2' %}
+          {{ state_attr(winner, 'latitude') }}
+        longitude: >-
+          {% set t1 = states.device_tracker.alok.last_updated if states.device_tracker.alok else 0 %}
+          {% set t2 = states.device_tracker.alokphone2.last_updated if states.device_tracker.alokphone2 else 0 %}
+          {% set winner = 'device_tracker.alok' if t1 > t2 else 'device_tracker.alokphone2' %}
+          {{ state_attr(winner, 'longitude') }}
+        location_accuracy: >-
+          {% set t1 = states.device_tracker.alok.last_updated if states.device_tracker.alok else 0 %}
+          {% set t2 = states.device_tracker.alokphone2.last_updated if states.device_tracker.alokphone2 else 0 %}
+          {% set winner = 'device_tracker.alok' if t1 > t2 else 'device_tracker.alokphone2' %}
+          {{ state_attr(winner, 'gps_accuracy') }}
+      - name: Rashmi Smart
+        unique_id: rashmi_smart_tracker
+        latitude: >-
+          {% set t1 = states.device_tracker.rashmi.last_updated if states.device_tracker.rashmi else 0 %}
+          {% set t2 = states.device_tracker.rashmiiphone2.last_updated if states.device_tracker.rashmiiphone2 else 0 %}
+          {% set winner = 'device_tracker.rashmi' if t1 > t2 else 'device_tracker.rashmiiphone2' %}
+          {{ state_attr(winner, 'latitude') }}
+        longitude: >-
+          {% set t1 = states.device_tracker.rashmi.last_updated if states.device_tracker.rashmi else 0 %}
+          {% set t2 = states.device_tracker.rashmiiphone2.last_updated if states.device_tracker.rashmiiphone2 else 0 %}
+          {% set winner = 'device_tracker.rashmi' if t1 > t2 else 'device_tracker.rashmiiphone2' %}
+          {{ state_attr(winner, 'longitude') }}
+        location_accuracy: >-
+          {% set t1 = states.device_tracker.rashmi.last_updated if states.device_tracker.rashmi else 0 %}
+          {% set t2 = states.device_tracker.rashmiiphone2.last_updated if states.device_tracker.rashmiiphone2 else 0 %}
+          {% set winner = 'device_tracker.rashmi' if t1 > t2 else 'device_tracker.rashmiiphone2' %}
+          {{ state_attr(winner, 'gps_accuracy') }}
+      - name: Arnav Smart
+        unique_id: arnav_smart_tracker
+        latitude: >-
+          {% set t1 = states.device_tracker.arnav.last_updated if states.device_tracker.arnav else 0 %}
+          {% set t2 = states.device_tracker.arnavs_iphone_17_pm.last_updated if states.device_tracker.arnavs_iphone_17_pm else 0 %}
+          {% set winner = 'device_tracker.arnav' if t1 > t2 else 'device_tracker.arnavs_iphone_17_pm' %}
+          {{ state_attr(winner, 'latitude') }}
+        longitude: >-
+          {% set t1 = states.device_tracker.arnav.last_updated if states.device_tracker.arnav else 0 %}
+          {% set t2 = states.device_tracker.arnavs_iphone_17_pm.last_updated if states.device_tracker.arnavs_iphone_17_pm else 0 %}
+          {% set winner = 'device_tracker.arnav' if t1 > t2 else 'device_tracker.arnavs_iphone_17_pm' %}
+          {{ state_attr(winner, 'longitude') }}
+        location_accuracy: >-
+          {% set t1 = states.device_tracker.arnav.last_updated if states.device_tracker.arnav else 0 %}
+          {% set t2 = states.device_tracker.arnavs_iphone_17_pm.last_updated if states.device_tracker.arnavs_iphone_17_pm else 0 %}
+          {% set winner = 'device_tracker.arnav' if t1 > t2 else 'device_tracker.arnavs_iphone_17_pm' %}
+          {{ state_attr(winner, 'gps_accuracy') }}
 
 intent_script: !include intent_script.yaml
 ios: !include ios.yaml

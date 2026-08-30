@@ -43,23 +43,28 @@
     action: homeassistant.turn_on
 - id: alarm_arm_away_on_departure
   alias: Arm alarm when everyone leaves
-  mode: single
-  trigger:
-  - platform: state
+  description: Arms SimpliSafe to away 10 min after last household member leaves,
+    if alarm automation enabled and alarm is disarmed. Updated to 2026.7 triggers/actions
+    syntax.
+  triggers:
+  - trigger: state
     entity_id: group.household
     from: home
     to: not_home
-    for: 00:10:00
-  condition:
+    for:
+      minutes: 10
+  conditions:
   - condition: state
     entity_id: input_boolean.alarm_automation
     state: 'on'
   - condition: state
     entity_id: alarm_control_panel.simplisafe_2
     state: disarmed
-  action:
-    service: script.turn_on
-    entity_id: script.alarm_away
+  actions:
+  - action: script.turn_on
+    target:
+      entity_id: script.alarm_away
+  mode: single
 - id: alarm_arm_home_at_night
   alias: Arm alarm to home mode at night
   triggers:
@@ -1348,17 +1353,20 @@
           transition: 3
       - delay: 00:00:05
 - id: smart_tracker_alok
-  alias: Smart Tracker - Alok
-  mode: queued
-  trigger:
-  - platform: event
-    event_type: homeassistant_started
+  alias: Smart Tracker - Alok (MIGRATED to template device_tracker - 2026-08-30)
+  description: Migrated from device_tracker.see to template device_tracker.alok_smart
+    in configuration.yaml. Original used device_tracker.see which is deprecated (breaks
+    2027.5). Template now handles location via state_attr. This automation is now
+    disabled/no-op to silence repair.
+  triggers:
+  - event_type: homeassistant_started
     id: startup
-  - platform: state
-    entity_id:
+    trigger: event
+  - entity_id:
     - device_tracker.alok
     - device_tracker.alokphone2
-  action:
+    trigger: state
+  actions:
   - if:
     - condition: trigger
       id: startup
@@ -1367,30 +1375,28 @@
   - variables:
       winner: '{% set t1 = states.device_tracker.alok.last_updated %} {% set t2 =
         states.device_tracker.alokphone2.last_updated %} {{ ''device_tracker.alok''
-        if t1 > t2 else ''device_tracker.alokphone2'' }}
-
-        '
-  - service: device_tracker.see
+        if t1 > t2 else ''device_tracker.alokphone2'' }}'
+  - action: logbook.log
     data:
-      dev_id: alok_smart
-      location_name: '{{ states(winner) }}'
-      gps:
-      - '{{ state_attr(winner, ''latitude'') | float(0) }}'
-      - '{{ state_attr(winner, ''longitude'') | float(0) }}'
-      gps_accuracy: '{{ state_attr(winner, ''gps_accuracy'') | int(0) }}'
-      battery: '{{ state_attr(winner, ''battery_level'') | int(0) }}'
-- id: smart_tracker_rashmi
-  alias: Smart Tracker - Rashmi
+      name: smart_tracker_alok
+      message: 'Migrated: device_tracker.alok_smart now handled by template device_tracker
+        in configuration.yaml'
+      entity_id: device_tracker.alok_smart
   mode: queued
-  trigger:
-  - platform: event
-    event_type: homeassistant_started
+- id: smart_tracker_rashmi
+  alias: Smart Tracker - Rashmi (MIGRATED to template device_tracker - 2026-08-30)
+  description: Migrated from device_tracker.see to template device_tracker.rashmi_smart
+    in configuration.yaml. Original used device_tracker.see which is deprecated (breaks
+    2027.5).
+  triggers:
+  - event_type: homeassistant_started
     id: startup
-  - platform: state
-    entity_id:
+    trigger: event
+  - entity_id:
     - device_tracker.rashmi
     - device_tracker.rashmiiphone2
-  action:
+    trigger: state
+  actions:
   - if:
     - condition: trigger
       id: startup
@@ -1399,30 +1405,27 @@
   - variables:
       winner: '{% set t1 = states.device_tracker.rashmi.last_updated %} {% set t2
         = states.device_tracker.rashmiiphone2.last_updated %} {{ ''device_tracker.rashmi''
-        if t1 > t2 else ''device_tracker.rashmiiphone2'' }}
-
-        '
-  - service: device_tracker.see
+        if t1 > t2 else ''device_tracker.rashmiiphone2'' }}'
+  - action: logbook.log
     data:
-      dev_id: rashmi_smart
-      location_name: '{{ states(winner) }}'
-      gps:
-      - '{{ state_attr(winner, ''latitude'') | float(0) }}'
-      - '{{ state_attr(winner, ''longitude'') | float(0) }}'
-      gps_accuracy: '{{ state_attr(winner, ''gps_accuracy'') | int(0) }}'
-      battery: '{{ state_attr(winner, ''battery_level'') | int(0) }}'
-- id: smart_tracker_arnav
-  alias: Smart Tracker - Arnav
+      entity_id: device_tracker.rashmi_smart
+      message: 'Migrated: device_tracker.rashmi_smart now handled by template'
+      name: smart_tracker_rashmi
   mode: queued
-  trigger:
-  - platform: event
-    event_type: homeassistant_started
+- id: smart_tracker_arnav
+  alias: Smart Tracker - Arnav (MIGRATED to template device_tracker - 2026-08-30)
+  description: Migrated from device_tracker.see to template device_tracker.arnav_smart
+    in configuration.yaml. Original used device_tracker.see which is deprecated (breaks
+    2027.5).
+  triggers:
+  - event_type: homeassistant_started
     id: startup
-  - platform: state
-    entity_id:
+    trigger: event
+  - entity_id:
     - device_tracker.arnav
     - device_tracker.arnavs_iphone_17_pm
-  action:
+    trigger: state
+  actions:
   - if:
     - condition: trigger
       id: startup
@@ -1431,18 +1434,13 @@
   - variables:
       winner: '{% set t1 = states.device_tracker.arnav.last_updated %} {% set t2 =
         states.device_tracker.arnavs_iphone_17_pm.last_updated %} {{ ''device_tracker.arnav''
-        if t1 > t2 else ''device_tracker.arnavs_iphone_17_pm'' }}
-
-        '
-  - service: device_tracker.see
+        if t1 > t2 else ''device_tracker.arnavs_iphone_17_pm'' }}'
+  - action: logbook.log
     data:
-      dev_id: arnav_smart
-      location_name: '{{ states(winner) }}'
-      gps:
-      - '{{ state_attr(winner, ''latitude'') | float(0) }}'
-      - '{{ state_attr(winner, ''longitude'') | float(0) }}'
-      gps_accuracy: '{{ state_attr(winner, ''gps_accuracy'') | int(0) }}'
-      battery: '{{ state_attr(winner, ''battery_level'') | int(0) }}'
+      entity_id: device_tracker.arnav_smart
+      message: 'Migrated: device_tracker.arnav_smart now handled by template'
+      name: smart_tracker_arnav
+  mode: queued
 - id: thermostat_proximity_approaching
   alias: Thermostat - Pre-condition when approaching
   description: 'Turn off away mode when the nearest person is heading towards home

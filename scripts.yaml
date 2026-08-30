@@ -320,9 +320,10 @@
         data_template:
           entity_id: input_select.hdmiswitcher
           option: >
-            {%- if states.remote.livingroom.attributes.current_activity == "Watch Apple TV" -%}
+            {%- set act = state_attr('remote.livingroom','current_activity') -%}
+            {%- if act == "Watch Apple TV" -%}
               AppleTV
-            {%- elif states.remote.livingroom.attributes.current_activity == "Watch Fire TV" -%}
+            {%- elif act == "Watch Fire TV" -%}
               FireTV
             {%- else -%}
               Shield
